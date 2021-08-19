@@ -59,35 +59,6 @@ services:
       - 8150:7050
     networks:
       - sgswnetwork
-  #orderer2-sgsworg:
-  #  container_name: orderer2-sgsworg
-  #  image: hyperledger/fabric-orderer:2.2.1
-  #  environment:
-  #    - FABRIC_LOGGING_SPEC=INFO
-  #    - ORDERER_GENERAL_LISTENADDRESS=0.0.0.0
-  #    - ORDERER_GENERAL_BOOTSTRAPMETHOD=file
-  #    - ORDERER_GENERAL_BOOTSTRAPFILE=/var/hyperledger/orderer/syschannel.block
-  #    - ORDERER_GENERAL_LOCALMSPID=SGSWOrgMSP
-  #    - ORDERER_GENERAL_LOCALMSPDIR=/var/hyperledger/orderer/msp
-  #    # enabled TLS
-  #    - ORDERER_GENERAL_TLS_ENABLED=true
-  #    - ORDERER_GENERAL_TLS_PRIVATEKEY=/var/hyperledger/orderer/tls/server.key
-  #    - ORDERER_GENERAL_TLS_CERTIFICATE=/var/hyperledger/orderer/tls/server.crt
-  #    - ORDERER_GENERAL_TLS_ROOTCAS=[/var/hyperledger/orderer/tls/ca.crt]
-  #    - ORDERER_GENERAL_CLUSTER_CLIENTCERTIFICATE=/var/hyperledger/orderer/tls/server.crt
-  #    - ORDERER_GENERAL_CLUSTER_CLIENTPRIVATEKEY=/var/hyperledger/orderer/tls/server.key
-  #    - ORDERER_GENERAL_CLUSTER_ROOTCAS=[/var/hyperledger/orderer/tls/ca.crt]
-  #  working_dir: /opt/gopath/src/github.com/hyperledger/fabric
-  #  command: orderer
-  #  volumes:
-  #      - ../channel-artifacts/syschannel.block:/var/hyperledger/orderer/syschannel.block
-  #      - ../crypto-config/organizations/peerOrganizations/sgsworg/orderers/orderer2.sgsworg/msp:/var/hyperledger/orderer/msp
-  #      - ../crypto-config/organizations/peerOrganizations/sgsworg/orderers/orderer2.sgsworg/tls/:/var/hyperledger/orderer/tls
-  #      - ./data/orderer2:/var/hyperledger/production/orderer
-  #  ports:
-  #    - 9150:7050
-  #  networks:
-  #    - sgswnetwork
   couchdb0-sgsworg:
     container_name: couchdb0-sgsworg
     image: hyperledger/fabric-couchdb:latest
