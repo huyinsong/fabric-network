@@ -1,2 +1,3 @@
 .DS_Store
 image/*.tar.gz
+org1/chaincode

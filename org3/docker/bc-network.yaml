@@ -1,0 +1,185 @@
+version: '2'
+networks:
+  tcswnetwork:
+services:
+  orderer0-tcsworg:
+    container_name: orderer0-tcsworg
+    image: hyperledger/fabric-orderer:2.2.1
+    environment:
+      - FABRIC_LOGGING_SPEC=INFO
+      - ORDERER_GENERAL_LISTENADDRESS=0.0.0.0
+      - ORDERER_GENERAL_BOOTSTRAPMETHOD=file
+      - ORDERER_GENERAL_BOOTSTRAPFILE=/var/hyperledger/orderer/syschannel.block
+      - ORDERER_GENERAL_LOCALMSPID=TCSWOrgMSP
+      - ORDERER_GENERAL_LOCALMSPDIR=/var/hyperledger/orderer/msp
+      - ORDERER_GENERAL_TLS_ENABLED=true
+      - ORDERER_GENERAL_TLS_PRIVATEKEY=/var/hyperledger/orderer/tls/server.key
+      - ORDERER_GENERAL_TLS_CERTIFICATE=/var/hyperledger/orderer/tls/server.crt
+      - ORDERER_GENERAL_TLS_ROOTCAS=[/var/hyperledger/orderer/tls/ca.crt]
+      - ORDERER_GENERAL_CLUSTER_CLIENTCERTIFICATE=/var/hyperledger/orderer/tls/server.crt
+      - ORDERER_GENERAL_CLUSTER_CLIENTPRIVATEKEY=/var/hyperledger/orderer/tls/server.key
+      - ORDERER_GENERAL_CLUSTER_ROOTCAS=[/var/hyperledger/orderer/tls/ca.crt]
+    working_dir: /opt/gopath/src/github.com/hyperledger/fabric
+    command: orderer
+    volumes:
+        - ../channel-artifacts/syschannel.block:/var/hyperledger/orderer/syschannel.block
+        - ../crypto-config/organizations/peerOrganizations/tcsworg/orderers/orderer0.tcsworg/msp:/var/hyperledger/orderer/msp
+        - ../crypto-config/organizations/peerOrganizations/tcsworg/orderers/orderer0.tcsworg/tls/:/var/hyperledger/orderer/tls
+        - ./data/orderer0:/var/hyperledger/production/orderer
+    ports:
+      - 7150:7050
+    networks:
+      - tcswnetwork
+  orderer1-tcsworg:
+    container_name: orderer1-tcsworg
+    image: hyperledger/fabric-orderer:2.2.1
+    environment:
+      - FABRIC_LOGGING_SPEC=INFO
+      - ORDERER_GENERAL_LISTENADDRESS=0.0.0.0
+      - ORDERER_GENERAL_BOOTSTRAPMETHOD=file
+      - ORDERER_GENERAL_BOOTSTRAPFILE=/var/hyperledger/orderer/syschannel.block
+      - ORDERER_GENERAL_LOCALMSPID=TCSWOrgMSP
+      - ORDERER_GENERAL_LOCALMSPDIR=/var/hyperledger/orderer/msp
+      # enabled TLS
+      - ORDERER_GENERAL_TLS_ENABLED=true
+      - ORDERER_GENERAL_TLS_PRIVATEKEY=/var/hyperledger/orderer/tls/server.key
+      - ORDERER_GENERAL_TLS_CERTIFICATE=/var/hyperledger/orderer/tls/server.crt
+      - ORDERER_GENERAL_TLS_ROOTCAS=[/var/hyperledger/orderer/tls/ca.crt]
+      - ORDERER_GENERAL_CLUSTER_CLIENTCERTIFICATE=/var/hyperledger/orderer/tls/server.crt
+      - ORDERER_GENERAL_CLUSTER_CLIENTPRIVATEKEY=/var/hyperledger/orderer/tls/server.key
+      - ORDERER_GENERAL_CLUSTER_ROOTCAS=[/var/hyperledger/orderer/tls/ca.crt]
+    working_dir: /opt/gopath/src/github.com/hyperledger/fabric
+    command: orderer
+    volumes:
+        - ../channel-artifacts/syschannel.block:/var/hyperledger/orderer/syschannel.block
+        - ../crypto-config/organizations/peerOrganizations/tcsworg/orderers/orderer1.tcsworg/msp:/var/hyperledger/orderer/msp
+        - ../crypto-config/organizations/peerOrganizations/tcsworg/orderers/orderer1.tcsworg/tls/:/var/hyperledger/orderer/tls
+        - ./data/orderer1:/var/hyperledger/production/orderer
+    ports:
+      - 8150:7050
+    networks:
+      - tcswnetwork
+  
+  couchdb0-tcsworg:
+    container_name: couchdb0-tcsworg
+    image: hyperledger/fabric-couchdb:latest
+    # Populate the COUCHDB_USER and COUCHDB_PASSWORD to set an admin user and password
+    # for CouchDB.  This will prevent CouchDB from operating in an "Admin Party" mode.
+    environment:
+      - COUCHDB_USER=admin
+      - COUCHDB_PASSWORD=admin
+    # Comment/Uncomment the port mapping if you want to hide/expose the CouchDB service,
+    # for example map it to utilize Fauxton User Interface in dev environments.
+    ports:
+      - "7984:5984"
+    networks:
+      - tcswnetwork
+  peer0-tcsworg:
+    container_name: peer0-tcsworg
+    image: hyperledger/fabric-peer:2.2.1
+    environment:
+      - CORE_PEER_ID=peer0
+      - CORE_PEER_ADDRESS=peer0.tcsworg:7251
+      - CORE_PEER_LISTENADDRESS=0.0.0.0:7251
+      - CORE_PEER_CHAINCODEADDRESS=peer0.tcsworg:7252
+      - CORE_PEER_CHAINCODELISTENADDRESS=0.0.0.0:7252
+      - CORE_PEER_GOSSIP_BOOTSTRAP=peer0.tcsworg:7251
+      - CORE_PEER_GOSSIP_EXTERNALENDPOINT=peer0.tcsworg:7251
+      - CORE_PEER_LOCALMSPID=TCSWOrgMSP
+      - CORE_VM_ENDPOINT=unix:///host/var/run/docker.sock
+      # the following setting starts chaincode containers on the same
+      # bridge network as the peers
+      # https://docs.docker.com/compose/networking/
+      - CORE_VM_DOCKER_HOSTCONFIG_NETWORKMODE=tcsw-network_tcswnetwork
+      - FABRIC_LOGGING_SPEC=INFO
+      #- FABRIC_LOGGING_SPEC=INFO
+      - CORE_PEER_TLS_ENABLED=true
+      - CORE_PEER_GOSSIP_USELEADERELECTION=true
+      - CORE_PEER_GOSSIP_ORGLEADER=false
+      - CORE_PEER_PROFILE_ENABLED=true
+      - CORE_PEER_TLS_CERT_FILE=/etc/hyperledger/fabric/tls/server.crt
+      - CORE_PEER_TLS_KEY_FILE=/etc/hyperledger/fabric/tls/server.key
+      - CORE_PEER_TLS_ROOTCERT_FILE=/etc/hyperledger/fabric/tls/ca.crt
+      - CORE_LEDGER_STATE_STATEDATABASE=CouchDB
+      - CORE_LEDGER_STATE_COUCHDBCONFIG_COUCHDBADDRESS=peer0.tcsworg:7984
+      # The CORE_LEDGER_STATE_COUCHDBCONFIG_USERNAME and CORE_LEDGER_STATE_COUCHDBCONFIG_PASSWORD
+      # provide the credentials for ledger to connect to CouchDB.  The username and password must
+      # match the username and password set for the associated CouchDB.
+      - CORE_LEDGER_STATE_COUCHDBCONFIG_USERNAME=admin
+      - CORE_LEDGER_STATE_COUCHDBCONFIG_PASSWORD=admin
+      # Allow more time for chaincode container to build on install.
+      - CORE_CHAINCODE_EXECUTETIMEOUT=300s
+    working_dir: /opt/gopath/src/github.com/hyperledger/fabric/peer
+    command: peer node start      
+    volumes:
+        - /var/run/:/host/var/run/
+        - ../crypto-config/organizations/peerOrganizations/tcsworg/peers/peer0.tcsworg/msp:/etc/hyperledger/fabric/msp
+        - ../crypto-config/organizations/peerOrganizations/tcsworg/peers/peer0.tcsworg/tls:/etc/hyperledger/fabric/tls
+        - ./data/peer0:/var/hyperledger/production
+    ports:
+      - 7251:7251
+      - 7252:7252
+    networks:
+      - tcswnetwork
+  couchdb1-tcsworg:
+    container_name: couchdb1-tcsworg
+    image: hyperledger/fabric-couchdb:latest
+    # Populate the COUCHDB_USER and COUCHDB_PASSWORD to set an admin user and password
+    # for CouchDB.  This will prevent CouchDB from operating in an "Admin Party" mode.
+    environment:
+      - COUCHDB_USER=admin
+      - COUCHDB_PASSWORD=admin
+    # Comment/Uncomment the port mapping if you want to hide/expose the CouchDB service,
+    # for example map it to utilize Fauxton User Interface in dev environments.
+    ports:
+      - "7985:5984"
+    networks:
+      - tcswnetwork
+
+  peer1-tcsworg:
+    container_name: peer1-tcsworg
+    image: hyperledger/fabric-peer:2.2.1
+    environment:
+      - CORE_PEER_ID=peer1
+      - CORE_PEER_ADDRESS=peer1.tcsworg:8251
+      - CORE_PEER_LISTENADDRESS=0.0.0.0:8251
+      - CORE_PEER_CHAINCODEADDRESS=peer1.tcsworg:8252
+      - CORE_PEER_CHAINCODELISTENADDRESS=0.0.0.0:8252
+      - CORE_PEER_GOSSIP_BOOTSTRAP=peer0.tcsworg:7251
+      - CORE_PEER_GOSSIP_EXTERNALENDPOINT=peer1.tcsworg:8251
+      - CORE_PEER_LOCALMSPID=TCSWOrgMSP
+      - CORE_VM_ENDPOINT=unix:///host/var/run/docker.sock
+      # the following setting starts chaincode containers on the same
+      # bridge network as the peers
+      # https://docs.docker.com/compose/networking/
+      - CORE_VM_DOCKER_HOSTCONFIG_NETWORKMODE=tcsw-network_tcswnetwork
+      - FABRIC_LOGGING_SPEC=INFO
+      #- FABRIC_LOGGING_SPEC=INFO
+      - CORE_PEER_TLS_ENABLED=true
+      - CORE_PEER_GOSSIP_USELEADERELECTION=true
+      - CORE_PEER_GOSSIP_ORGLEADER=false
+      - CORE_PEER_PROFILE_ENABLED=true
+      - CORE_PEER_TLS_CERT_FILE=/etc/hyperledger/fabric/tls/server.crt
+      - CORE_PEER_TLS_KEY_FILE=/etc/hyperledger/fabric/tls/server.key
+      - CORE_PEER_TLS_ROOTCERT_FILE=/etc/hyperledger/fabric/tls/ca.crt
+      - CORE_LEDGER_STATE_STATEDATABASE=CouchDB
+      - CORE_LEDGER_STATE_COUCHDBCONFIG_COUCHDBADDRESS=peer0.tcsworg:7985
+      # The CORE_LEDGER_STATE_COUCHDBCONFIG_USERNAME and CORE_LEDGER_STATE_COUCHDBCONFIG_PASSWORD
+      # provide the credentials for ledger to connect to CouchDB.  The username and password must
+      # match the username and password set for the associated CouchDB.
+      - CORE_LEDGER_STATE_COUCHDBCONFIG_USERNAME=admin
+      - CORE_LEDGER_STATE_COUCHDBCONFIG_PASSWORD=admin
+      # Allow more time for chaincode container to build on install.
+      - CORE_CHAINCODE_EXECUTETIMEOUT=300s
+    working_dir: /opt/gopath/src/github.com/hyperledger/fabric/peer
+    command: peer node start      
+    volumes:
+        - /var/run/:/host/var/run/
+        - ../crypto-config/organizations/peerOrganizations/tcsworg/peers/peer1.tcsworg/msp:/etc/hyperledger/fabric/msp
+        - ../crypto-config/organizations/peerOrganizations/tcsworg/peers/peer1.tcsworg/tls:/etc/hyperledger/fabric/tls
+        - ./data/peer1:/var/hyperledger/production
+    ports:
+      - 8251:8251
+      - 8252:8252
+    networks:
+      - tcswnetwork
