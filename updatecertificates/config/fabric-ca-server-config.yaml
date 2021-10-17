@@ -97,7 +97,7 @@ crl:
   # Specifies expiration for the generated CRL. The number of hours
   # specified by this property is added to the UTC time, the resulting time
   # is used to set the 'Next Update' date of the CRL.
-  expiry: 24h
+  expiry: 87600h
 
 #############################################################################
 #  The registry section controls how the fabric-ca-server does two things:
@@ -237,24 +237,26 @@ ldap:
 # which are always stored in lower case.
 #############################################################################
 affiliations:
-   cnsworg:
-      - orderer
-      - peer
-      - admin
-      - user
-      - member
-   sgsworg:
-      - orderer
-      - peer
-      - admin
-      - user
-      - member
-   tcsworg:
-      - orderer
-      - peer
-      - admin
-      - user
-      - member
+  cnsworg:
+    - orderer
+    - peer
+    - admin
+    - user
+    - member
+  sgsworg:
+    - orderer
+    - peer
+    - admin
+    - user
+    - member
+  tcsworg:
+    - orderer
+    - peer
+    - admin
+    - user
+    - member
+  org1:
+    - department1
 
 #############################################################################
 #  Signing section
@@ -276,13 +278,13 @@ signing:
     default:
       usage:
         - digital signature
-      expiry: 8760h
+      expiry: 87600h
     profiles:
       ca:
          usage:
            - cert sign
            - crl sign
-         expiry: 24h
+         expiry: 87600h
          caconstraint:
            isca: true
            maxpathlen: 0
@@ -293,7 +295,7 @@ signing:
             - server auth
             - client auth
             - key agreement
-         expiry: 24h
+         expiry: 87600h
 
 ###########################################################################
 #  Certificate Signing Request (CSR) section.
@@ -314,18 +316,18 @@ signing:
 #     CA certificates though it can still issue end entity certificates.
 ###########################################################################
 csr:
-   cn: ca.cnsworg
+   cn: example.com
    names:
       - C: US
         ST: "North Carolina"
         L: "Durham"
-        O: ca.cnsworg
+        O: example.com
         OU:
    hosts:
      - localhost
-     - ca.cnsworg
+     - example.com
    ca:
-      expiry: 24h
+      expiry: 131400h
       pathlength: 1
 
 #############################################################################
